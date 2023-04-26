@@ -1,293 +1,177 @@
 #include <iostream>
+#include "LSLSE.h"
 
-struct SocioClub {
-    int NumeroSocio;
-    std::string NombreSocio;
-    std::string domicilio;
-    int AnioIngreso;
-};
+class SocioClub{
 
-template<class T>
-class LSLSE;
-
-template<class T>
-class node{
-private:
-    T data;
-    node<T>* sig;
-public:
-    node():sig(nullptr){};
-    friend class LSLSE<T>;
-};
-
-template<class T>
-class LSLSE{
-private:
-    node<T>* lista;
-public:
-    LSLSE():lista(nullptr){};
-    bool vacia()const;
-    node<T>* ultimo()const;
-    node<T>* primero()const;
-    node<T>* anterior(node<T>* pos)const;
-    void insertar(node<T>* pos, T elem);
-    bool eliminar(node<T>* pos);
-    void imprimir()const;
-    void agregarUsuario(int NumeroSocio, std::string NombreSocio, std::string domicilio, int AnioIngreso);
-    bool BajaSocio(int NumeroSocio);
-    void GenerarReporte() const;
-    void BuscarSocio(std::string NombreSocio, std::string domicilio)const;
-    int TotalDeSocios();
-    void ordenar();
-};
-
-template<class T>
-void LSLSE<T>::imprimir()const{
-    node<T>* aux=lista;
-    while(aux!=nullptr){
-        std::cout<<aux->data.NumeroSocio<<", "<<aux->data.NombreSocio<<", "<<aux->data.domicilio<<", "<<aux->data.AnioIngreso<<" -> \n";
-        aux=aux->sig;
-    }
-}
-
-template<class T>
-bool LSLSE<T>::eliminar(node<T>* pos){
-    if(vacia() || pos==nullptr){
-        return false;
-    }
-    if(pos==lista){
-        lista=lista->sig;
-    }
-    else{
-        anterior(pos)->sig=pos->sig;
-    }
-    delete pos;
-    return true;
-}
-
-template<class T>
-void LSLSE<T>::insertar(node<T>* pos, T elem){
-    node<T>* aux= new node<T>;
-    aux->data=elem;
-    if(pos==nullptr){
-        aux->sig=lista;
-        lista=aux;
-    }
-    else{
-        aux->sig=pos->sig;
-        pos->sig=aux;
-    }
-}
-
-template<class T>
-node<T>* LSLSE<T>::anterior(node<T>* pos)const{
-    if(vacia() || pos==nullptr){
-        return nullptr;
-    }
-    node<T>* aux=lista;
-    while(aux!=nullptr && aux->sig!=pos){
-        aux=aux->sig;
-    }
-    return aux;
-}
-
-template<class T>
-node<T>* LSLSE<T>::primero()const{
-    if(vacia()){
-        return nullptr;
-    }
-    return lista;
-}
+    private:
+        int numeroSocio;
+        std::string NombreSocio;
+        std::string Domicilio;
+        int AnioIngreso;
 
 
-template<class T>
-node<T>* LSLSE<T>::ultimo()const{
-    if(vacia()){
-        return nullptr;
-    }
-    node<T>* aux=lista;
-    while(aux->sig!=nullptr){
-        aux=aux->sig;
-    }
-    return aux;
-}
+    public:
+        SocioClub() {}
+        SocioClub(int numeroSocio, std::string NombreSocio, std::string Domicilio, int AnioIngreso)
+        : numeroSocio(numeroSocio), NombreSocio(NombreSocio), Domicilio(Domicilio),  AnioIngreso(AnioIngreso) {}
 
-template<class T>
-bool LSLSE<T>::vacia()const{
-    if(lista==nullptr)
-        return true;
-    return false;
-}
-
-template<class T>
-void LSLSE<T>::agregarUsuario(int NumeroSocio, std::string NombreSocio, std::string domicilio, int AnioIngreso) {
-    SocioClub u;
-    u.NumeroSocio = NumeroSocio;
-    u.NombreSocio = NombreSocio;
-    u.domicilio = domicilio;
-    u.AnioIngreso = AnioIngreso;
-
-    node<T>* aux=lista;
-    while (aux != nullptr) {
-        if (aux->data.NumeroSocio == NumeroSocio) {
-            std::cout << "El numero de socio ya existe." << std::endl;
-            return;
+        friend std::ostream& operator<<(std::ostream& os, const SocioClub& socio){
+            os << "Numero de socio: " << socio.numeroSocio << std::endl;
+            os << "Nombre: " << socio.NombreSocio << std::endl;
+            os << "Domicilio: " << socio.Domicilio << std::endl;
+            os << "Anio de ingreso: " << socio.AnioIngreso << std::endl;
+            return os;
         }
-        aux = aux->sig;
-    }
 
-    insertar(ultimo(), u);
-    ordenar();
-
-}
-
-template<class T>
-bool LSLSE<T>::BajaSocio(int NumeroSocio){
-    node<T>* aux=lista;
-    node<T>* anterior=nullptr;
-    while(aux!=nullptr){
-        if(aux->data.NumeroSocio==NumeroSocio){
-            if(anterior==nullptr){
-                lista=aux->sig;
+    void AgregarUsuario(int numeroSocio, std::string NombreSocio, std::string Domicilio, int AnioIngreso, LSLSE<SocioClub>& lista){
+        SocioClub nuevoSocio(numeroSocio, NombreSocio, Domicilio, AnioIngreso);
+        node<SocioClub>* aux = lista.primero();
+        while (aux != nullptr) {
+            if (aux->data.numeroSocio == numeroSocio) {
+                std::cout << "El numero de socio ya existe." << std::endl;
+                return;
             }
-            else{
-                anterior->sig=aux->sig;
+            aux = aux->sig;
+        }
+        if(lista.vacia()){
+            lista.insertar(nullptr, nuevoSocio);
+        }
+        else{
+            lista.insertar(lista.ultimo(), nuevoSocio);
+        }
+    }
+
+
+    void BuscarSocio(std::string nombre, std::string domicilio,LSLSE<SocioClub>& lista){
+        node<SocioClub>* aux = lista.primero();
+        while(aux != nullptr) {
+            if (aux->data.NombreSocio == nombre && aux->data.Domicilio == domicilio) {
+                system("cls");
+                std::cout << "Socio encontrado: " << std::endl;
+                std::cout << aux->data << std::endl;
+                return;
             }
-            delete aux;
-            return true;
+            aux = aux->sig;
         }
-        anterior=aux;
-        aux=aux->sig;
+        std::cout << "Socio no encontrado." << std::endl;
     }
-    return false;
-}
 
-template<class T>
-void LSLSE<T>::GenerarReporte()const{
-    node<T>* aux=lista;
-    while(aux!=nullptr){
-        std::cout<<"Numero del Socio: "<<aux->data.NumeroSocio<<"\nNombre: "<<aux->data.NombreSocio<<"\nDomicilio: "<<aux->data.domicilio<<"\nAnio de Ingreso: "<<aux->data.AnioIngreso<<"\n----------------------------\n";
-        aux=aux->sig;
-    }
-}
-
-template<class T>
-void LSLSE<T>::BuscarSocio(std::string nombre, std::string domicilio) const {
-    node<T>* aux = lista;
-    bool encontrado = false;
-    while (aux != nullptr) {
-        if (aux->data.NombreSocio == nombre && aux->data.domicilio == domicilio) {
-            std::cout << "Socio encontrado: \n";
-            std::cout << "Numero de Socio: " << aux->data.NumeroSocio << std::endl;
-            std::cout << "Nombre: " << aux->data.NombreSocio << std::endl;
-            std::cout << "Domicilio: " << aux->data.domicilio << std::endl;
-            std::cout << "Año de Ingreso: " << aux->data.AnioIngreso << std::endl;
-            encontrado = true;
+    void DarBajaUsuario(int numeroSocio, LSLSE<SocioClub>& lista){
+        node<SocioClub>* aux = lista.primero();
+        while(aux != nullptr){
+            if(aux->data.numeroSocio == numeroSocio){
+                std::cout << "Dando de baja al socio: " << std::endl;
+                std::cout << aux->data << std::endl;
+                lista.eliminar(aux);
+                return;
+            }
+            aux = aux->sig;
         }
-        aux = aux->sig;
+        std::cout << "Socio no encontrado." << std::endl;
     }
-    if (!encontrado) {
-        std::cout << "No se encontró al socio con nombre " << nombre << " y domicilio " << domicilio << std::endl;
-    }
-}
 
-template<class T>
-int LSLSE<T>::TotalDeSocios(){
-    node<T>* aux=lista;
-    int cont = 0;
-    while(aux!=nullptr){
-        cont++;
-        aux=aux->sig;
-    }
-    return cont;
-}
-
-template<class T>
-void LSLSE<T>::ordenar() {
-    node<T>* aux = lista;
-    LSLSE<T> nueva_lista;
-    while (aux != nullptr) {
-        node<T>* pos = nueva_lista.primero();
-        node<T>* ant = nullptr;
-        while (pos != nullptr && pos->data.NumeroSocio < aux->data.NumeroSocio) {
-            ant = pos;
-            pos = pos->sig;
+    int TotalDeSocios(LSLSE<SocioClub>& lista){
+        node<SocioClub>* aux = lista.primero();
+        int cont = 0;
+        while(aux!=nullptr){
+            cont++;
+            aux=aux->sig;
         }
-        if (ant == nullptr) {
-            nueva_lista.insertar(nullptr, aux->data);
-        } else {
-            nueva_lista.insertar(ant, aux->data);
-        }
-        aux = aux->sig;
+        return cont;
     }
-    lista = nueva_lista.primero();
-}
 
-int main()
-{
-    LSLSE<SocioClub> milista;
-    int opc,NumeroSocio,AnioIngreso;
-    std::string NombreSocio,domicilio;
-    while(opc <= 6)
+    void ordenar(LSLSE<SocioClub>& lista) {
+    if (lista.vacia() || lista.primero()->sig == nullptr) {
+        return;
+    }
+    node<SocioClub>* nodoI = lista.primero();
+    while (nodoI != nullptr) {
+        node<SocioClub>* nodoJ = nodoI->sig;
+        while (nodoJ != nullptr) {
+            if (nodoI->data.numeroSocio > nodoJ->data.numeroSocio) {
+                SocioClub temp = nodoI->data;
+                nodoI->data = nodoJ->data;
+                nodoJ->data = temp;
+            }
+            nodoJ = nodoJ->sig;
+        }
+        nodoI = nodoI->sig;
+        }
+    }
+
+
+    void GenerarReporte(LSLSE<SocioClub>&lista){
+        node<SocioClub>* aux = lista.primero();
+        while(aux!=nullptr){
+            std::cout<<"Numero del Socio: "<<aux->data.numeroSocio<<"\nNombre: "<<aux->data.NombreSocio<<"\nDomicilio: "<<aux->data.Domicilio<<"\nAnio de Ingreso: "<<aux->data.AnioIngreso<<"\n----------------------------\n";
+            aux=aux->sig;
+        }
+    }
+};//termina clase SocioClub
+
+
+int main(){
+    LSLSE<SocioClub> listaSocios;
+    SocioClub socio;
+    int opc = 0,numeroSocio,AnioIngreso;
+    std::string NombreSocio, Domicilio;
+    while(true)
     {
-        std::cout<<"1.-Agregar un nuevo Socio\n2.-Dar de baja a un Socio\n3.-Generar reportes de todos los socios\n4.-Buscar por nombre y domicilio\n5.-Calcular e imprimir el total de  socios registrados\n6.-Salir"<<std::endl;
+        std::cout<<"\nElija una de las siguientes opciones:\n"
+        "1.-Registrar nuevo Socio\n2.-Dar de Baja Usuario\n3.-Generar Reporte\n4.-Buscar Socio\n5.-Total de Socios\n6.-Salir"<<std::endl;
         std::cin>>opc;
-        system("cls");
         switch(opc)
         {
-            case 1://agregar usuario
-                std::cout<<"Ingrese el Numero de Socio"<<std::endl;
-                std::cin>>NumeroSocio;
-                std::cout<<"Ingrese el Nombre del Socio"<<std::endl;
+            case 1:
+                system("cls");
+                std::cout<<"Numero Socio"<<std::endl;
+                std::cin>>numeroSocio;
+                std::cout<<"Nombre Socio"<<std::endl;
                 std::cin>>NombreSocio;
-                std::cout<<"Ingrese el Domicilio del Socio"<<std::endl;
-                std::cin>>domicilio;
-                std::cout<<"Ingrese el Anio de Ingreso del Socio"<<std::endl;
+                std::cout<<"Domicilio Socio"<<std::endl;
+                std::cin>>Domicilio;
+                std::cout<<"Anio de Registro"<<std::endl;
                 std::cin>>AnioIngreso;
-                milista.agregarUsuario(NumeroSocio,NombreSocio,domicilio,AnioIngreso);
-            break;
-
-            case 2://dar de baja
-                std::cout<<"Ingrese el Numero de Socio a dar de baja"<<std::endl;
-                std::cin>>NumeroSocio;
-                milista.BajaSocio(NumeroSocio);
-            break;
-
-            case 3://generar un reporte
-                if(milista.vacia())
-                {
-                    std::cout<<"Lista vacia, favor de agregar Socios\n"<<std::endl;
-
-                }
-                else
-                {
-                   milista.GenerarReporte();
-                }
+                socio.AgregarUsuario(numeroSocio,NombreSocio,Domicilio,AnioIngreso,listaSocios);
 
             break;
 
-            case 4://buscar por nombre y domicilio
-                std::cout<<"Ingrese el Nombre del Socio"<<std::endl;
+            case 2:
+                system("cls");
+                std::cout<<"Numero de socio a dar de baja"<<std::endl;
+                std::cin>>numeroSocio;
+                socio.DarBajaUsuario(numeroSocio, listaSocios);
+            break;
+
+            case 3:
+                system("cls");
+                socio.ordenar(listaSocios);
+                socio.GenerarReporte(listaSocios);
+            break;
+
+            case 4:
+                system("cls");
+                std::cout<<"ingrese los datos del socio a buscar\nNombre"<<std::endl;
                 std::cin>>NombreSocio;
-                std::cout<<"Ingrese el Domicilio del Socio"<<std::endl;
-                std::cin>>domicilio;
-                milista.BuscarSocio(NombreSocio,domicilio);
+                std::cout<<"Domicilio"<<std::endl;
+                std::cin>>Domicilio;
+                socio.BuscarSocio(NombreSocio,Domicilio,listaSocios);
             break;
 
-            case 5://calcular e imprimir el total de  socios registrados
-                std::cout<<"Total de Socios:"<<milista.TotalDeSocios()<<std::endl;
+            case 5:
+                system("cls");
+                std::cout<<"Total de socios: "<<socio.TotalDeSocios(listaSocios)<<std::endl;
             break;
 
-            case 6://salir del programa
-                std::cout<<"Hasta Luego"<<std::endl;
+            case 6:
                 exit(0);
             break;
 
             default:
-                std::cout<<"opcion invalida"<<std::endl;
+                system("cls");
+                std::cout<<"Opcion incorrecta o inexistente"<<std::endl;
             break;
         }
     }
     return 0;
 }
-
